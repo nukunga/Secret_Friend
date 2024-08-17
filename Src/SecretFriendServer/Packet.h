@@ -3,6 +3,7 @@
 
 #include "IOData.h"
 #include <queue>
+#include <vector>
 #include <mutex>
 
 constexpr int HDR_FOOTER_SIZE = 4;
@@ -57,6 +58,8 @@ enum PacketType
 	SERVER_JOIN_NOTIFY = 221,
 	SERVER_LEAVE_NOTIFY = 222,
 	SERVER_ROOM_DESTROY_NOTIFY = 223,
+	
+	SERVER_HANDSHAKE_REQ = 230
 
 };
 
@@ -66,7 +69,7 @@ public:
 	PacketBuilder()
 	{
 		Hdr.fill(0);
-		Data.fill(0);
+		Data.resize(0);
 		DataSize = 0;
 		PType = E_PK_UNDEFINED;
 	};
@@ -79,7 +82,7 @@ public:
 	void ValidatePacket();
 	void InitializeReceiver();
 
-	std::array<BYTE, SOCKET_BUFFER_SIZE> GetPacketData() const;
+	std::vector<BYTE> GetPacketData() const;
 	PacketType GetPacketType() const;
 
 private:
@@ -87,7 +90,7 @@ private:
 
 	std::queue<BYTE> PacketQueue;			// 패킷 큐에 저장 후 순서대로 꺼내서 처리
 	std::array<BYTE, HDR_FOOTER_SIZE> Hdr;	// 현재 패킷 객체의 헤더 유효성 검사용 시그니쳐 0x24, 0x08, 0x01, 0x05
-	std::array<BYTE, SOCKET_BUFFER_SIZE> Data;	// 현재 파싱이 끝난 패킷
+	std::vector<BYTE> Data;	// 현재 파싱이 끝난 패킷
 	WORD DataSize = 0;						// 현재 패킷 객체에서 수용할 패킷 크기
 	PacketType PType;						// 패킷 형태 구분
 	std::mutex Mtx;							// Mutual exclusion 방지를 위한 뮤텍스 (세션별로 생성된다)

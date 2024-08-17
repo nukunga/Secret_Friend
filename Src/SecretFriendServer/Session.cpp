@@ -1,4 +1,5 @@
 #include "Session.h"
+#include "Key.h"
 
 
 void Session::Close()
@@ -97,20 +98,47 @@ int Session::send(WSABUF wsabuf)
 
 void Session::ParsePacket()
 {
-    std::array<BYTE, SOCKET_BUFFER_SIZE> data = PacketBuilder::GetPacketData();
+    std::vector<BYTE> data = PacketBuilder::GetPacketData();
     PacketType ptype = PacketBuilder::GetPacketType();
 
     if (data.size() == 0 || data[0] == 0x00)
+    {
         printf("Parse fail\n");
+        return;
+    }
+
+    KeyManager keyManager;
 
     switch (ptype)
     {
     case CLIENT_SEND_PUBLICKEY:
+    {
+        // 클라이언트로부터 공개 키 수신
+        std::array<BYTE, RSA_KEY_SIZE> publicKey;
+        std::copy(data.begin() + 1, data.begin() + 1 + RSA_KEY_SIZE, publicKey.begin());
+        if (keyManager.ReceivePublicKey(this, publicKey))
+            printf("Public key processed successfully.\n");
+        else
+            printf("Failed to process public key.\n");
 
         break;
+    }
 
     case CLIENT_SEND_SYMMETRICKEY:
+    {
+        // 클라이언트로부터 대칭 키 수신
+        std::array<BYTE, AES_KEY_SIZE> symmetricKey;
+        std::copy(data.begin() + 1, data.begin() + 1 + AES_KEY_SIZE, symmetricKey.begin());
+
+
+        if (keyManager.ReceiveSymmetricKey(this, symmetricKey))
+            printf("Symmetric key processed successfully.\n");
+
+        else
+            printf("Failed to process symmetric key.\n");
+
         break;
+    }
 
     case CLIENT_SEND_SESSIONID:
         break;
@@ -128,13 +156,22 @@ void Session::ParsePacket()
         break;
 
     case CLIENT_REQ_OPPONENT_PUBLIC_KEY:
+        if (keyManager.SendGuestPublicKey(this))
+            printf("Opponent's public key sent successfully.\n");
+        else
+            printf("Failed to send opponent's public key.\n");
+
         break;
 
     case CLIENT_SEND_CHAT:
         break;
 
+    default:
+        printf("Unknown packet type: %d\n", ptype);
+        break;
     }
 }
+
 
 LONGLONG Session::GetSessionID() const
 {

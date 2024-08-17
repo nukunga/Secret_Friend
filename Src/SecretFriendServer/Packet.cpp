@@ -31,7 +31,8 @@ void PacketBuilder::ValidatePacket()
     }
 }
 
-std::array<BYTE, SOCKET_BUFFER_SIZE> PacketBuilder::GetPacketData() const
+
+std::vector<BYTE> PacketBuilder::GetPacketData() const
 {
     return Data;
 }
