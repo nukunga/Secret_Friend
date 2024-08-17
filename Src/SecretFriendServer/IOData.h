@@ -44,10 +44,12 @@ public:
 	}
 
 
-	WSABUF SetData(PBYTE pData, int dataSize)
+	WSABUF SetData(PBYTE pData, WORD dataSize)
 	{
 		size_t sendSize = dataSize;
-		memcpy_s(buffer_.data(), buffer_.max_size(), pData, dataSize);
+		buffer_.at(0) = 0x24; buffer_.at(1) = 0x08; buffer_.at(0) = 0x01; buffer_.at(0) = 0x05;
+		memcpy_s(buffer_.data() + 4, sizeof(WORD), &dataSize, sizeof(WORD));
+		memcpy_s(buffer_.data() + 6, buffer_.max_size() - 6, pData, dataSize);
 
 		WSABUF wsabuf;
 		wsabuf.buf = buffer_.data();
