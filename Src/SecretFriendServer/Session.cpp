@@ -103,6 +103,7 @@ int Session::send(WSABUF wsabuf)
 void Session::ParsePacket()
 {
     std::vector<BYTE> data = PacketBuilder::GetPacketData();
+    std::vector<BYTE> response;
     PacketType ptype = PacketBuilder::GetPacketType();
 
     if (data.size() == 0 || data[0] == 0x00)
@@ -146,14 +147,28 @@ void Session::ParsePacket()
         break;
 
     case CLIENT_REQ_ROOM_CREATE:
+    {
+        std::wstring roomName = std::wstring((PWCHAR)data.data());
+        std::shared_ptr<Room> newRoom = std::make_shared<Room>(roomName, this);
+        SessionState = 2;
+        JoinedRoom = newRoom;
+
+        response.push_back(PacketType::SERVER_REQ_SUCCESS);
+        SendPacket(response);
+
         break;
+    }
 
     case CLIENT_REQ_ROOM_ENTER:
+        
+
         break;
 
     case CLIENT_REQ_ROOM_EXIT:
+    {
+        std::wstring roomName = std::wstring((PWCHAR)data.data());
         break;
-
+    }
     case CLIENT_REQ_OPPONENT_PUBLIC_KEY:
         keyManager.SendGuestPublicKey(this);
         break;
