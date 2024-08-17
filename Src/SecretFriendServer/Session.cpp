@@ -3,6 +3,7 @@
 #include "RoomList.h"
 #include "Key.h"
 #include "..\ChatCrypto\AES.h"
+#include "..\ChatCrypto\RSA.h"
 
 
 void Session::Close()
@@ -109,13 +110,11 @@ LONGLONG Session::GetSessionID() const
 void Session::DecryptPacket()
 {
     AESWrapper aes;
-    std::vector<BYTE> data = GetPacketData();
-    if (data[0] != PacketType::CLIENT_SEND_PUBLICKEY)
+
+    if (GetPacketType() != PacketType::CLIENT_SEND_PUBLICKEY)
     {
-
+        GetPacketData() = aes.decryptWithAES(this->GetPacketData(), this->AESKey, this->AESIV);
     }
-
-    GetPacketData() = aes.decryptWithAES(this->GetPacketData(), this->AESKey, this->AESIV);
 }
 
 void Session::ParsePacket()
@@ -123,16 +122,6 @@ void Session::ParsePacket()
     std::vector<BYTE> data = GetPacketData();
     std::vector<BYTE> response;
     PacketType ptype = GetPacketType();
-
-    AESWrapper aes;
-    std::vector<BYTE> decData = aes.decryptWithAES(data, GetAESKey(), GetAESIV());
-
-    if (decData.size() == 0 || data[0] == 0x00)
-    {
-        printf("Parse fail\n");
-        return;
-    }
-
     KeyManager keyManager;
 
     switch (ptype)
@@ -145,8 +134,7 @@ void Session::ParsePacket()
 
         keyManager.ReceivePublicKey(this, publicKey);
 
-        std::vector<BYTE> data = { 'O', 'K' };
-        SendPacket(data, SERVER_SEND_PARITY);
+        
 
         break;
     }
@@ -157,6 +145,10 @@ void Session::ParsePacket()
         std::copy(data.begin() + 1, data.begin() + 1 + AES_KEY_SIZE, symmetricKey.begin());
 
         keyManager.ReceiveSymmetricKey(this, symmetricKey);
+
+        std::vector<BYTE> data = { 'O', 'K' };
+        SendPacket(data, SERVER_SEND_PARITY);
+
         break;
     }
 

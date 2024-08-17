@@ -187,9 +187,7 @@ unsigned IOCP::WorkerThread()
                 pSession->PushRecvPacket(*ioData, dwIoSize);
                 pSession->ValidatePacket();
                 
-                // TODO: 암호화 해제 후 이를 프로토콜에 맞게 처리하는 로직 추가 필요
-                // 암호화 해제 함수
-                // 데이터 처리 후
+                pSession->DecryptPacket();
                 pSession->ParsePacket();
 
                 pSession->InitializeReceiver();

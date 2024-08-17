@@ -17,7 +17,11 @@ void PacketBuilder::ValidatePacket()
         if (DataSize <= PacketQueue.size())
         {
             Mtx.lock();
-            for (int i = 0; i < DataSize; i++)
+
+            PType = (PacketType)PacketQueue.front();
+            PacketQueue.pop();
+
+            for (int i = 0; i < DataSize - 1; i++)
             {
                 Data[i] = PacketQueue.front();
                 PacketQueue.pop();
