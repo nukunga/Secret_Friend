@@ -8,7 +8,8 @@
 #include <cstring>
 #include <list>
 #include <thread>
-#include "Session.h"
+
+class Session;
 
 class IOCP
 {

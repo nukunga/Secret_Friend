@@ -89,7 +89,9 @@ void PacketBuilder::InitializeReceiver()
     DataSize = 0;
     Mtx.unlock();
     
-}void PacketBuilder::ParsePacket()
+}
+
+void PacketBuilder::ParsePacket()
 {
 
 }

@@ -1,4 +1,5 @@
 #include "Session.h"
+#include "Room.h"
 
 void Session::Close()
 {
@@ -67,12 +68,11 @@ bool Session::BindRecv()
     return true;
 }
 
-template<std::size_t N>
-bool Session::SendPacket(const std::array<BYTE, N>& data)
+bool Session::SendPacket(std::vector<BYTE> data)
 {
     // IOCP 워커 쓰레드에서 메모리 할당 해제시킴
     IO_DATA* ioData = new IO_DATA(IO_SEND);
-    WSABUF wsabuf = ioData->SetData(data, N);
+    WSABUF wsabuf = ioData->SetData(data.data(), data.size());
     DWORD dwSentNumBytes = 0;
     int nRet = WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 

@@ -1,4 +1,5 @@
 #include "IOCP.h"
+#include "Session.h"
 #include <process.h>
 
 bool IOCP::InitializeSocket()
@@ -184,10 +185,6 @@ unsigned IOCP::WorkerThread()
                 // 데이터 처리 후
                 pSession->ParsePacket();
 
-                
-                /* send 테스트용 코드*/
-                BYTE tmp[4] = { 0x02,0x00,65,65 };
-                pSession->SendPacket(tmp, 4);
                 pSession->InitializeReceiver();
                 pSession->BindRecv();
             }
