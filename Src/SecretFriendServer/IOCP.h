@@ -10,6 +10,7 @@
 #include <thread>
 
 class Session;
+class Room;
 
 class IOCP
 {

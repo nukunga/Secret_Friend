@@ -1,5 +1,6 @@
 #include "IOCP.h"
 #include "Session.h"
+#include "Room.h"
 #include <process.h>
 
 bool IOCP::InitializeSocket()
@@ -134,6 +135,12 @@ void IOCP::AddNewSession(Session* session)
 
 void IOCP::DeleteSession(Session* session)
 {
+    std::shared_ptr<Room> joinedRoom = session->GetJoinedRoom();
+    if (joinedRoom != 0)
+    {
+        joinedRoom.get()->LeaveRoom(session);
+    }
+
     session->Close();
     this->connectedClients.remove(session);
     delete session;
