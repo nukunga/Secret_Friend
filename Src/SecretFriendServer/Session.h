@@ -19,6 +19,7 @@ public:
 		SessionState = 0;
 		PublicKey.fill(0);
 		AESKey.fill(0);
+		CurrentData.fill(0);
 	}
 
 	Session(Session const&) = delete;
@@ -42,10 +43,12 @@ private:
 
 	SOCKET SessionSocket;
 	DWORD SessionState;							// 현재 세션이 위치한 곳 (키교환중(0), 로비(1) 또는 채팅방(2))
+	LONGLONG SessionID;
 	std::array<IO_DATA, IO_DATA_SIZE> IOData;	// Send, Recieve 두개를 가진다
 	std::array<BYTE, RSA_KEY_SIZE> PublicKey;	// 상대방과 키교환을 위해 사용하는 공개키 (RSA-4096)
 	// TODO: PublicKey는 별도의 User
 	std::array<BYTE, AES_KEY_SIZE> AESKey;		// 해당 세션과 통신할 때 사용하는 암호화 키
+	std::array<BYTE, AES_KEY_SIZE> AESIV;		// 해당 세션과 통신할 때 사용하는 초기화 벡터
 };
 
 #endif
