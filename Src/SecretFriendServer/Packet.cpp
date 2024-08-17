@@ -16,20 +16,13 @@ void PacketBuilder::ValidatePacket()
     {
         if (DataSize <= PacketQueue.size())
         {
-            auto packet = std::make_unique<BYTE[]>(DataSize);
             Mtx.lock();
             for (int i = 0; i < DataSize; i++)
             {
-                packet[i] = PacketQueue.front();
+                Data[i] = PacketQueue.front();
                 PacketQueue.pop();
             }
-
-            Hdr.fill(0);
-            DataSize = 0;
             Mtx.unlock();
-            
-            // TODO: 정상 패킷 수신 후 패킷을 여기서 처리한다.
-            printf("Parse success: %s\n", packet.get());
         }
     }
     else
@@ -75,7 +68,7 @@ bool PacketBuilder::ValidateHeader()
         DataSize = *((PWORD)size.data());
 
         // 정상 패킷은 데이터 크기가 0이 될 수 없음
-        if (DataSize == 0 || DataSize > 5000)
+        if (DataSize == 0 || DataSize > SOCKET_BUFFER_SIZE)
         {
             Hdr.fill(0);
             DataSize = 0;
@@ -89,7 +82,15 @@ bool PacketBuilder::ValidateHeader()
     return true;
 }
 
+void PacketBuilder::InitializeReceiver()
+{
+    Mtx.lock();
+    Hdr.fill(0);
+    DataSize = 0;
+    Mtx.unlock();
+}
+
 void PacketBuilder::ParsePacket()
 {
-
+    
 }
