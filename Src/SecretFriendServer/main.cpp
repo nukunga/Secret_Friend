@@ -6,12 +6,12 @@
 #include "IOCP.h"
 
 // TODO: Openssl과 Crypto모듈 연동 테스트 후 지워도 됨
-#include "..\ChatCrypto\ChatCrypto.h"
+//#include "..\ChatCrypto\ChatCrypto.h"
 
 int main(int argc, char* argv[])
 {   
     // TODO: Openssl과 Crypto모듈 연동 테스트 후 지워도 됨
-    TestCrypt();
+    //TestCrypt();
 
     constexpr int port = 8000;
     std::unique_ptr<IOCP> server = std::make_unique<IOCP>();

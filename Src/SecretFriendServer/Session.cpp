@@ -1,5 +1,5 @@
 #include "Session.h"
-#include "Room.h"
+
 
 void Session::Close()
 {
@@ -12,7 +12,6 @@ void Session::Close()
     closesocket(SessionSocket);
     printf("[-] Client disconnected\n");
 }
-
 
 
 bool Session::BindIOCompletionPort(HANDLE iocpHandle)
@@ -96,16 +95,15 @@ int Session::send(WSABUF wsabuf)
     return WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 }
 
-void PacketBuilder::ParsePacket()
+void Session::ParsePacket()
 {
-
+    /*
     if (DataSize == 0 || Data[0] == 0x00)
         printf("Parse fail\n");
 
     switch (PType)
     {
     case CLIENT_SEND_PUBLICKEY:
-        KeyManager::ReceivePublicKey(static_cast<Session*>(this), Data);
         break;
 
     case CLIENT_SEND_SYMMETRICKEY:
@@ -132,7 +130,7 @@ void PacketBuilder::ParsePacket()
     case CLIENT_SEND_CHAT:
         break;
 
-    }
+    }*/
 }
 
 LONGLONG Session::GetSessionID() const

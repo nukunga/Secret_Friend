@@ -90,8 +90,3 @@ void PacketBuilder::InitializeReceiver()
     Mtx.unlock();
     
 }
-
-void PacketBuilder::ParsePacket()
-{
-    
-}

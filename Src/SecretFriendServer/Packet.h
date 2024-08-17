@@ -2,7 +2,6 @@
 #define PACKET_TYPE_H
 
 #include "IOData.h"
-#include "Key.h"
 #include <queue>
 #include <mutex>
 
@@ -70,14 +69,13 @@ public:
 		Data.fill(0);
 		DataSize = 0;
 		PType = E_PK_UNDEFINED;
-	}
+	};
 
 	~PacketBuilder()
-	{}
+	{};
 
 	void PushRecvPacket(IO_DATA ioData, size_t ioSize);
 	void ValidatePacket();
-	void ParsePacket();
 	void InitializeReceiver();
 
 private:

@@ -3,7 +3,6 @@
 
 #include <array>
 #include <vector>
-#include "IoData.h"
 #include "Packet.h"
 
 constexpr int IO_DATA_SIZE = 2;
@@ -38,6 +37,7 @@ public:
 	bool BindRecv();
 
 	bool SendPacket(std::vector<BYTE> data);
+	void ParsePacket();
 
 	LONGLONG GetSessionID() const;
 

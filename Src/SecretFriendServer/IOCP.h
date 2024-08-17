@@ -8,6 +8,8 @@
 #include <cstring>
 #include <list>
 #include <thread>
+#include "Session.h"
+#include "Room.h"
 
 class Session;
 class Room;

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <winsock2.h>
 // TODO: Openssl과 Crypto모듈 연동 테스트 후 지워도 됨
-#include "..\ChatCrypto\ChatCrypto.h"
+//#include "..\ChatCrypto\ChatCrypto.h"
 
 using namespace std;
 
@@ -14,7 +14,7 @@ void    ErrorHandling(const char* message);
 int main(int argc, char* argv[])
 {
     // TODO: Openssl과 Crypto모듈 연동 테스트 후 지워도 됨
-    TestCrypt();
+    //TestCrypt();
 
     WSADATA        wsaData;
     SOCKET        hSocket;
