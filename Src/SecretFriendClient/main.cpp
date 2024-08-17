@@ -57,10 +57,10 @@ int main(int argc, char* argv[])
         {
             strLen = strlen(message) + 1;
 
-            BYTE packet[4096];
-            memset(packet, 0x11, 4096);
+            BYTE packet[4095];
+            memset(packet, 0x11, 4095);
             //memcpy(packet, "BOB", 4);
-            send(hSocket, (const char*)packet, 4096, 0);
+            send(hSocket, (const char*)packet, 4095, 0);
             printf("Send complete\n");
             //send(hSocket, "BOLSDSD", 8, 0);
         }
