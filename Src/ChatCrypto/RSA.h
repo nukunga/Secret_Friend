@@ -6,7 +6,7 @@
 
 class RSAEncryption {
 public:
-    RSAEncryption(int keyLength);
+    RSAEncryption();
     ~RSAEncryption();
 
     std::string exportPublicKeyPEM() const;

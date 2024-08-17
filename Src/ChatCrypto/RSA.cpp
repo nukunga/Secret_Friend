@@ -5,7 +5,7 @@
 #include <openssl/err.h>
 #include <stdexcept>
 
-RSAEncryption::RSAEncryption(int keyLength) {
+RSAEncryption::RSAEncryption() {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
     if (!ctx) {
         handleCryptoErrors();
@@ -16,7 +16,7 @@ RSAEncryption::RSAEncryption(int keyLength) {
         handleCryptoErrors();
     }
 
-    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, keyLength) <= 0) {
+    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 4096) <= 0) {
         EVP_PKEY_CTX_free(ctx);
         handleCryptoErrors();
     }
