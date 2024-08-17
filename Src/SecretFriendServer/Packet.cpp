@@ -93,5 +93,5 @@ void PacketBuilder::InitializeReceiver()
 
 void PacketBuilder::ParsePacket()
 {
-
+    
 }
