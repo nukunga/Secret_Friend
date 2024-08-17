@@ -5,7 +5,6 @@
 #include <mutex>
 #include "Session.h"
 
-
 class Room
 {
 public:
@@ -20,8 +19,7 @@ public:
 	void LeaveRoom(Session* requestorSession);
 	void DestroyRoom();
 
-	template<std::size_t N>
-	void SendChat(Session* requestorSession, std::array<BYTE, N> data);
+	void SendChat(Session* requestorSession, std::vector<BYTE> data);
 
 private:
 	std::mutex mtx;
