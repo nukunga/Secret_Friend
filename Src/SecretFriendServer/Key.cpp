@@ -1,6 +1,6 @@
 #include "Key.h"
 
-bool KeyManager::ReceivePublicKey(Session* requestorSession, const std::array<BYTE, RSA_KEY_SIZE>& data)
+bool KeyManager::ReceivePublicKey(Session* requestorSession, const std::vector<BYTE>& data)
 {
 	if (data.empty())
 	{
@@ -15,7 +15,7 @@ bool KeyManager::ReceivePublicKey(Session* requestorSession, const std::array<BY
 	return true;
 }
 
-bool KeyManager::ReceiveSymmetricKey(Session* requestorSession, const std::array<BYTE, AES_KEY_SIZE>& data)
+bool KeyManager::ReceiveSymmetricKey(Session* requestorSession, const std::vector<BYTE>& data)
 {
 	if (data.size() != AES_KEY_SIZE / 8)
 	{
@@ -41,7 +41,7 @@ bool KeyManager::SendGuestPublicKey(Session* requestorSession)
 
 	BYTE packetType = static_cast<BYTE>(PacketType::SERVER_SEND_OPPONENT_PUBLIC_KEY);
 
-	std::array<BYTE, RSA_KEY_SIZE> publickey = requestorSession->GetPublicKey();
+	std::vector<BYTE> publickey = requestorSession->GetPublicKey();
 
 	// 5. 패킷 전체를 포함할 데이터 배열 생성
 	std::vector<BYTE> packetData;
@@ -60,13 +60,13 @@ bool KeyManager::SendGuestPublicKey(Session* requestorSession)
 
 
 
-bool KeyManager::ReceiveRoomSymmetricKey(Session* requestorSession, const std::array<BYTE, RSA_KEY_SIZE>& data)
+bool KeyManager::ReceiveRoomSymmetricKey(Session* requestorSession, const std::vector<BYTE>& data)
 {
 	return SendRoomSymmetricKey(requestorSession, data);
 }
 
 
-bool KeyManager::SendRoomSymmetricKey(Session* requestorSession, const std::array<BYTE, RSA_KEY_SIZE>& data)
+bool KeyManager::SendRoomSymmetricKey(Session* requestorSession, const std::vector<BYTE>& data)
 {
 	std::array<BYTE, HDR_FOOTER_SIZE> footer = { 0x24, 0x08, 0x01, 0x05 };
 
@@ -75,7 +75,7 @@ bool KeyManager::SendRoomSymmetricKey(Session* requestorSession, const std::arra
 
 	BYTE packetType = static_cast<BYTE>(PacketType::SERVER_SEND_ROOM_SYMMETRICKEY);
 
-	std::array<BYTE, RSA_KEY_SIZE> publickey = requestorSession->GetPublicKey();
+	std::vector<BYTE> publickey = requestorSession->GetPublicKey();
 
 	// 5. 패킷 전체를 포함할 데이터 배열 생성
 	std::vector<BYTE> packetData;

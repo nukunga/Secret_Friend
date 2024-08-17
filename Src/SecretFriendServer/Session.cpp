@@ -1,5 +1,7 @@
 #include "Session.h"
+#include "Room.h"
 #include "Key.h"
+#include "..\ChatCrypto\AES.h"
 
 
 void Session::Close()
@@ -74,7 +76,9 @@ bool Session::SendPacket(std::vector<BYTE> data)
 {
     // IOCP 워커 쓰레드에서 메모리 할당 해제시킴
     IO_DATA* ioData = new IO_DATA(IO_SEND);
-    WSABUF wsabuf = ioData->SetData(data.data(), data.size());
+    AESWrapper aes = AESWrapper();
+    std::vector<BYTE> encData = aes.encryptWithAES(data, AESKey, AESIV);
+    WSABUF wsabuf = ioData->SetData(encData.data(), encData.size());
     DWORD dwSentNumBytes = 0;
     int nRet = WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 
@@ -114,7 +118,7 @@ void Session::ParsePacket()
     case CLIENT_SEND_PUBLICKEY:
     {
         // 클라이언트로부터 공개 키 수신
-        std::array<BYTE, RSA_KEY_SIZE> publicKey;
+        std::vector<BYTE> publicKey;
         std::copy(data.begin() + 1, data.begin() + 1 + RSA_KEY_SIZE, publicKey.begin());
         if (keyManager.ReceivePublicKey(this, publicKey))
             printf("Public key processed successfully.\n");
@@ -127,7 +131,7 @@ void Session::ParsePacket()
     case CLIENT_SEND_SYMMETRICKEY:
     {
         // 클라이언트로부터 대칭 키 수신
-        std::array<BYTE, AES_KEY_SIZE> symmetricKey;
+        std::vector<BYTE> symmetricKey;
         std::copy(data.begin() + 1, data.begin() + 1 + AES_KEY_SIZE, symmetricKey.begin());
 
 
@@ -164,6 +168,7 @@ void Session::ParsePacket()
         break;
 
     case CLIENT_SEND_CHAT:
+        JoinedRoom->SendChat(this, data);
         break;
 
     default:
@@ -179,17 +184,17 @@ LONGLONG Session::GetSessionID() const
     return SessionID;
 }
 
-void Session::StorePublicKey(const std::array<BYTE, RSA_KEY_SIZE>& publicKey)
+void Session::StorePublicKey(const std::vector<BYTE>& publicKey)
 {
     std::copy(publicKey.begin(), publicKey.end(), PublicKey.begin());
 }
 
-void Session::StoreAESKey(const std::array<BYTE, AES_KEY_SIZE>& aesKey)
+void Session::StoreAESKey(const std::vector<BYTE>& aesKey)
 {
     std::copy(aesKey.begin(), aesKey.end(), AESKey.begin());
 }
 
-std::array<BYTE, RSA_KEY_SIZE> Session::GetPublicKey() const
+std::vector<BYTE> Session::GetPublicKey() const
 {
     return PublicKey;
 }

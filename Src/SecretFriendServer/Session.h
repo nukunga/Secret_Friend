@@ -19,8 +19,8 @@ public:
 		IOData({ IO_RECV, IO_SEND }), SessionSocket(sock)
 	{
 		SessionState = 0;
-		PublicKey.fill(0);
-		AESKey.fill(0);
+		PublicKey.resize(256, 0);
+		AESKey.resize(256, 0);
 	}
 
 	Session(Session const&) = delete;
@@ -41,9 +41,9 @@ public:
 
 	LONGLONG GetSessionID() const;
 
-	void StorePublicKey(const std::array<BYTE, RSA_KEY_SIZE>& publicKey);
-	void StoreAESKey(const std::array<BYTE, AES_KEY_SIZE>& publicKey);
-	std::array<BYTE, RSA_KEY_SIZE> GetPublicKey() const;
+	void StorePublicKey(const std::vector<BYTE>& publicKey);
+	void StoreAESKey(const std::vector<BYTE>& publicKey);
+	std::vector<BYTE> GetPublicKey() const;
 
 
 private:
@@ -57,10 +57,10 @@ private:
 	std::shared_ptr<Room> JoinedRoom;
 	LONGLONG SessionID;
 	std::array<IO_DATA, IO_DATA_SIZE> IOData;	// Send, Recieve 두개를 가진다
-	std::array<BYTE, RSA_KEY_SIZE> PublicKey;	// 상대방과 키교환을 위해 사용하는 공개키 (RSA-4096)
+	std::vector<BYTE> PublicKey;	// 상대방과 키교환을 위해 사용하는 공개키 (RSA-4096)
 	// TODO: PublicKey는 별도의 User
-	std::array<BYTE, AES_KEY_SIZE> AESKey;		// 해당 세션과 통신할 때 사용하는 암호화 키
-	std::array<BYTE, AES_KEY_SIZE> AESIV;		// 해당 세션과 통신할 때 사용하는 초기화 벡터
+	std::vector<BYTE> AESKey;		// 해당 세션과 통신할 때 사용하는 암호화 키
+	std::vector<BYTE> AESIV;		// 해당 세션과 통신할 때 사용하는 초기화 벡터
 };
 
 #endif

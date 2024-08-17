@@ -10,11 +10,11 @@ class KeyManager
 {
 public:
     // 수신된 공개 키를 세션에 저장
-    bool ReceivePublicKey(Session* requestorSession, const std::array<BYTE, RSA_KEY_SIZE>& data);
-    bool ReceiveSymmetricKey(Session* requestorSession, const std::array<BYTE, AES_KEY_SIZE>& data);
-    bool ReceiveRoomSymmetricKey(Session* requestorSession, const std::array<BYTE, RSA_KEY_SIZE>& data);
+    bool ReceivePublicKey(Session* requestorSession, const std::vector<BYTE>& data);
+    bool ReceiveSymmetricKey(Session* requestorSession, const std::vector<BYTE>& data);
+    bool ReceiveRoomSymmetricKey(Session* requestorSession, const std::vector<BYTE>& data);
     bool SendGuestPublicKey(Session* requestorSession);
-    bool SendRoomSymmetricKey(Session* requestorSession, const std::array<BYTE, RSA_KEY_SIZE>& data);
+    bool SendRoomSymmetricKey(Session* requestorSession, const std::vector<BYTE>& data);
 
 private:
     std::mutex mtx; 
