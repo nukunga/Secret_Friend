@@ -18,6 +18,7 @@ public:
 	bool JoinRoom(Session* requestorSession);
 	void LeaveRoom(Session* requestorSession);
 	void SendChat(Session* requestorSession, std::vector<BYTE> data);
+	std::wstring GetRoomName() const { return RoomName; }
 
 private:
 	std::mutex mtx;

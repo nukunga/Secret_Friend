@@ -1,4 +1,5 @@
-
+#include "Key.h"
+#include "..\ChatCrypto\AES.h"
 #include "IOCP.h"
 #include <process.h>
 

@@ -36,14 +36,17 @@ public:
 	bool Connect(HANDLE iocpHandle);
 	bool BindRecv();
 
-	bool SendPacket(std::vector<BYTE> data);
+	bool SendPacket(std::vector<BYTE> data, PacketType pType);
 	void ParsePacket();
 
 	LONGLONG GetSessionID() const;
 
+	void DecryptPacket();
 	void StorePublicKey(const std::vector<BYTE>& publicKey);
 	void StoreAESKey(const std::vector<BYTE>& publicKey);
 	std::vector<BYTE> GetPublicKey() const;
+	std::vector<BYTE> GetAESKey() const;
+	std::vector<BYTE> GetAESIV() const;
 
 
 private:

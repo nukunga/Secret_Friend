@@ -1,5 +1,6 @@
 #include "Session.h"
 #include "Room.h"
+#include "RoomList.h"
 #include "Key.h"
 #include "..\ChatCrypto\AES.h"
 
@@ -72,13 +73,12 @@ bool Session::BindRecv()
     return true;
 }
 
-bool Session::SendPacket(std::vector<BYTE> data)
+bool Session::SendPacket(std::vector<BYTE> data, PacketType pType)
 {
     // IOCP 워커 쓰레드에서 메모리 할당 해제시킴
-    IO_DATA* ioData = new IO_DATA(IO_SEND);
-    AESWrapper aes = AESWrapper();
+    AESWrapper aes;
     std::vector<BYTE> encData = aes.encryptWithAES(data, AESKey, AESIV);
-    WSABUF wsabuf = ioData->SetData(encData.data(), encData.size());
+    WSABUF wsabuf = IOData[IO_SEND].SetData(pType, encData.data(), encData.size());
     DWORD dwSentNumBytes = 0;
     int nRet = WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 
@@ -100,13 +100,34 @@ int Session::send(WSABUF wsabuf)
     return WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 }
 
+LONGLONG Session::GetSessionID() const
+{
+    // session id return
+    return SessionID;
+}
+
+void Session::DecryptPacket()
+{
+    AESWrapper aes;
+    std::vector<BYTE> data = GetPacketData();
+    if (data[0] != PacketType::CLIENT_SEND_PUBLICKEY)
+    {
+
+    }
+
+    GetPacketData() = aes.decryptWithAES(this->GetPacketData(), this->AESKey, this->AESIV);
+}
+
 void Session::ParsePacket()
 {
-    std::vector<BYTE> data = PacketBuilder::GetPacketData();
+    std::vector<BYTE> data = GetPacketData();
     std::vector<BYTE> response;
-    PacketType ptype = PacketBuilder::GetPacketType();
+    PacketType ptype = GetPacketType();
 
-    if (data.size() == 0 || data[0] == 0x00)
+    AESWrapper aes;
+    std::vector<BYTE> decData = aes.decryptWithAES(data, GetAESKey(), GetAESIV());
+
+    if (decData.size() == 0 || data[0] == 0x00)
     {
         printf("Parse fail\n");
         return;
@@ -125,11 +146,10 @@ void Session::ParsePacket()
         keyManager.ReceivePublicKey(this, publicKey);
 
         std::vector<BYTE> data = { 'O', 'K' };
-        SendPacket(data);
+        SendPacket(data, SERVER_SEND_PARITY);
 
         break;
     }
-
     case CLIENT_SEND_SYMMETRICKEY:
     {
         // 클라이언트로부터 대칭 키 수신
@@ -144,29 +164,59 @@ void Session::ParsePacket()
         break;
 
     case CLIENT_REQ_ROOM_LIST:
-        break;
+    {
+        std::vector<std::shared_ptr<Room>> list = GetRoomList();
+        std::vector<BYTE> data;
+        for (int i = 0; i < list.size(); i++)
+        {
+            std::wstring roomName = list[i]->GetRoomName();
+            for (int j = 0; j < roomName.size(); j++)
+            {
+                data.push_back(roomName[j]);
+            }
+            data.push_back(0x00);
+        }
 
+        SendPacket(data, SERVER_ROOM_LIST);
+        break;
+    }
     case CLIENT_REQ_ROOM_CREATE:
     {
         std::wstring roomName = std::wstring((PWCHAR)data.data());
-        std::shared_ptr<Room> newRoom = std::make_shared<Room>(roomName, this);
-        SessionState = 2;
-        JoinedRoom = newRoom;
+        std::shared_ptr<Room> target;
+        if (IsRoomExists(roomName, target) == true)
+        {
+            SendPacket(response, SERVER_REQ_FAIL);
+        }
+        else
+        {
+            std::shared_ptr<Room> newRoom = std::make_shared<Room>(roomName, this);
+            GetRoomList().push_back(newRoom);
+            SessionState = 2;
+            JoinedRoom = newRoom;
 
-        response.push_back(PacketType::SERVER_REQ_SUCCESS);
-        SendPacket(response);
+            SendPacket(response, SERVER_REQ_SUCCESS);
+        }
 
         break;
     }
-
     case CLIENT_REQ_ROOM_ENTER:
-        
-
-        break;
-
-    case CLIENT_REQ_ROOM_EXIT:
     {
         std::wstring roomName = std::wstring((PWCHAR)data.data());
+        std::shared_ptr<Room> target;
+        if (IsRoomExists(roomName, target) == true)
+        {
+            target->JoinRoom(this);
+        }
+        else
+        {
+            SendPacket(response, SERVER_REQ_FAIL);
+        }
+        break;
+    }
+    case CLIENT_REQ_ROOM_EXIT:
+    {
+        JoinedRoom->LeaveRoom(this);
         break;
     }
     case CLIENT_REQ_OPPONENT_PUBLIC_KEY:
@@ -182,13 +232,6 @@ void Session::ParsePacket()
     }
 }
 
-
-LONGLONG Session::GetSessionID() const
-{
-    // session id return
-    return SessionID;
-}
-
 void Session::StorePublicKey(const std::vector<BYTE>& publicKey)
 {
     std::copy(publicKey.begin(), publicKey.end(), PublicKey.begin());
@@ -202,4 +245,14 @@ void Session::StoreAESKey(const std::vector<BYTE>& aesKey)
 std::vector<BYTE> Session::GetPublicKey() const
 {
     return PublicKey;
+}
+
+std::vector<BYTE> Session::GetAESKey() const
+{
+    return AESKey;
+}
+
+std::vector<BYTE> Session::GetAESIV() const
+{
+    return AESIV;
 }

@@ -1,22 +1,42 @@
 #include "RoomList.h"
 #include "Room.h"
 
-std::vector<std::shared_ptr<Room>> RoomList::GetRoomList()
+std::mutex roomMtx;
+std::vector<std::shared_ptr<Room>> RoomList;
+
+std::vector<std::shared_ptr<Room>> GetRoomList()
 {
     return RoomList;
 }
 
-void RoomList::AddRoom(std::shared_ptr<Room> room)
+void AddRoom(std::shared_ptr<Room> room)
 {
-    mtx.lock();
+    roomMtx.lock();
     RoomList.push_back(std::move(room));
-    mtx.unlock();
+    roomMtx.unlock();
 }
 
-void RoomList::RemoveRoom(std::shared_ptr<Room> room)
+void RemoveRoom(std::shared_ptr<Room> room)
 {
-    mtx.lock();
+    roomMtx.lock();
     auto it = std::find(RoomList.begin(), RoomList.end(), room);
     RoomList.erase(it);
-    mtx.unlock();
+    roomMtx.unlock();
+}
+
+bool IsRoomExists(std::wstring name, std::shared_ptr<Room>& output)
+{
+    roomMtx.lock();
+    for (int i = 0; i < RoomList.size(); i++)
+    {
+        if (RoomList[i]->GetRoomName() == name)
+        {
+            output = RoomList[i];
+            roomMtx.unlock();
+            return true;
+        }
+    }
+    roomMtx.unlock();
+
+    return false;
 }
