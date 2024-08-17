@@ -6,7 +6,7 @@
 
 using namespace std;
 
-// git push Test2
+// git push Test
 
 #pragma comment (lib, "ws2_32.lib")
 
