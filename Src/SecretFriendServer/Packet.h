@@ -2,6 +2,7 @@
 #define PACKET_TYPE_H
 
 #include "IOData.h"
+#include "Key.h"
 #include <queue>
 #include <mutex>
 
@@ -32,7 +33,7 @@ enum PacketType
 
 	/* From Client */
 	CLIENT_SEND_PUBLICKEY = 100, // CLIENT의 공개키 전송
-	CLIENT_SEND_SYMMETRICKEY = 101,
+	CLIENT_SEND_SYMMETRICKEY = 101, // CLIENT의 대칭키 전송
 	CLIENT_SEND_SESSIONID = 102, // SESSIOINID 전송
 	
 	CLIENT_REQ_ROOM_LIST = 110, // ROOM LIST 요청
@@ -50,7 +51,8 @@ enum PacketType
 
 	SERVER_ROOM_LIST = 210, // SERVER의 ROOM LIST
 	SERVER_ROOM_INFO = 211, // SERVER의 ROOM 정보
-	SERVER_OPPONENT_PUBLIC_KEY = 212, // SERVER에서의 상대방의 공개키 요청
+	SERVER_SEND_OPPONENT_PUBLIC_KEY = 212, // SERVER에서 Guest의 공개키를 전송
+	SERVER_SEND_ROOM_SYMMETRICKEY = 213,
 
 	SERVER_SEND_CHAT = 220, // SERVER에서의 메세지 전송
 	SERVER_JOIN_NOTIFY = 221,
