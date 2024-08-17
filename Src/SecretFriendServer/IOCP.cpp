@@ -180,10 +180,15 @@ unsigned IOCP::WorkerThread()
                 pSession->ValidatePacket();
                 
                 // TODO: 암호화 해제 후 이를 프로토콜에 맞게 처리하는 로직 추가 필요
+                // 암호화 해제 함수
+                // 데이터 처리 후
+                pSession->ParsePacket();
 
+                
                 /* send 테스트용 코드*/
                 BYTE tmp[4] = { 0x02,0x00,65,65 };
                 pSession->SendPacket(tmp, 4);
+                pSession->InitializeReceiver();
                 pSession->BindRecv();
             }
         }
