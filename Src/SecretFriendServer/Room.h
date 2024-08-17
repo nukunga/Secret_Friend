@@ -17,8 +17,6 @@ public:
 
 	bool JoinRoom(Session* requestorSession);
 	void LeaveRoom(Session* requestorSession);
-	void DestroyRoom();
-
 	void SendChat(Session* requestorSession, std::vector<BYTE> data);
 
 private:
