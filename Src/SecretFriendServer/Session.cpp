@@ -97,13 +97,16 @@ int Session::send(WSABUF wsabuf)
 
 void Session::ParsePacket()
 {
-    /*
-    if (DataSize == 0 || Data[0] == 0x00)
+    std::array<BYTE, SOCKET_BUFFER_SIZE> data = PacketBuilder::GetPacketData();
+    PacketType ptype = PacketBuilder::GetPacketType();
+
+    if (data.size() == 0 || data[0] == 0x00)
         printf("Parse fail\n");
 
-    switch (PType)
+    switch (ptype)
     {
     case CLIENT_SEND_PUBLICKEY:
+
         break;
 
     case CLIENT_SEND_SYMMETRICKEY:
@@ -130,7 +133,7 @@ void Session::ParsePacket()
     case CLIENT_SEND_CHAT:
         break;
 
-    }*/
+    }
 }
 
 LONGLONG Session::GetSessionID() const

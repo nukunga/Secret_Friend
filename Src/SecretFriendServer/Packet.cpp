@@ -31,6 +31,16 @@ void PacketBuilder::ValidatePacket()
     }
 }
 
+std::array<BYTE, SOCKET_BUFFER_SIZE> PacketBuilder::GetPacketData() const
+{
+    return Data;
+}
+
+PacketType PacketBuilder::GetPacketType() const
+{
+    return PType;
+}
+
 bool PacketBuilder::ValidateHeader()
 {
     // 올바른 패킷 헤더를 받을 때 까지 큐에서 pop

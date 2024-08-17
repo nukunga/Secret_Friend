@@ -75,8 +75,12 @@ public:
 	{};
 
 	void PushRecvPacket(IO_DATA ioData, size_t ioSize);
+
 	void ValidatePacket();
 	void InitializeReceiver();
+
+	std::array<BYTE, SOCKET_BUFFER_SIZE> GetPacketData() const;
+	PacketType GetPacketType() const;
 
 private:
 	bool ValidateHeader();
