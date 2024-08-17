@@ -75,8 +75,6 @@ bool KeyManager::SendRoomSymmetricKey(Session* requestorSession, const std::vect
 
 	BYTE packetType = static_cast<BYTE>(PacketType::SERVER_SEND_ROOM_SYMMETRICKEY);
 
-	std::vector<BYTE> publickey = requestorSession->GetPublicKey();
-
 	// 5. 패킷 전체를 포함할 데이터 배열 생성
 	std::vector<BYTE> packetData;
 	packetData.reserve(HDR_FOOTER_SIZE + HDR_SIZE_DEF + dataSize); // 전체 크기 예약

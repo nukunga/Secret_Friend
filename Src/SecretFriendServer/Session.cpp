@@ -120,10 +120,11 @@ void Session::ParsePacket()
         // 클라이언트로부터 공개 키 수신
         std::vector<BYTE> publicKey;
         std::copy(data.begin() + 1, data.begin() + 1 + RSA_KEY_SIZE, publicKey.begin());
-        if (keyManager.ReceivePublicKey(this, publicKey))
-            printf("Public key processed successfully.\n");
-        else
-            printf("Failed to process public key.\n");
+
+        keyManager.ReceivePublicKey(this, publicKey);
+
+        std::vector<BYTE> data = { 'O', 'K' };
+        SendPacket(data);
 
         break;
     }
@@ -134,13 +135,7 @@ void Session::ParsePacket()
         std::vector<BYTE> symmetricKey;
         std::copy(data.begin() + 1, data.begin() + 1 + AES_KEY_SIZE, symmetricKey.begin());
 
-
-        if (keyManager.ReceiveSymmetricKey(this, symmetricKey))
-            printf("Symmetric key processed successfully.\n");
-
-        else
-            printf("Failed to process symmetric key.\n");
-
+        keyManager.ReceiveSymmetricKey(this, symmetricKey);
         break;
     }
 
@@ -160,11 +155,7 @@ void Session::ParsePacket()
         break;
 
     case CLIENT_REQ_OPPONENT_PUBLIC_KEY:
-        if (keyManager.SendGuestPublicKey(this))
-            printf("Opponent's public key sent successfully.\n");
-        else
-            printf("Failed to send opponent's public key.\n");
-
+        keyManager.SendGuestPublicKey(this);
         break;
 
     case CLIENT_SEND_CHAT:
@@ -172,7 +163,6 @@ void Session::ParsePacket()
         break;
 
     default:
-        printf("Unknown packet type: %d\n", ptype);
         break;
     }
 }
