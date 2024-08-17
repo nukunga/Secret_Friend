@@ -13,6 +13,8 @@ void Session::Close()
     printf("[-] Client disconnected\n");
 }
 
+
+
 bool Session::BindIOCompletionPort(HANDLE iocpHandle)
 {
     // CompletionKey로 해당 Session 객체를 사용한다.
@@ -94,8 +96,62 @@ int Session::send(WSABUF wsabuf)
     return WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 }
 
-LONGLONG Session::GetSessionID()
+void PacketBuilder::ParsePacket()
+{
+
+    if (DataSize == 0 || Data[0] == 0x00)
+        printf("Parse fail\n");
+
+    switch (PType)
+    {
+    case CLIENT_SEND_PUBLICKEY:
+        KeyManager::ReceivePublicKey(static_cast<Session*>(this), Data);
+        break;
+
+    case CLIENT_SEND_SYMMETRICKEY:
+        break;
+
+    case CLIENT_SEND_SESSIONID:
+        break;
+
+    case CLIENT_REQ_ROOM_LIST:
+        break;
+
+    case CLIENT_REQ_ROOM_CREATE:
+        break;
+
+    case CLIENT_REQ_ROOM_ENTER:
+        break;
+
+    case CLIENT_REQ_ROOM_EXIT:
+        break;
+
+    case CLIENT_REQ_OPPONENT_PUBLIC_KEY:
+        break;
+
+    case CLIENT_SEND_CHAT:
+        break;
+
+    }
+}
+
+LONGLONG Session::GetSessionID() const
 {
     // session id return
     return SessionID;
+}
+
+void Session::StorePublicKey(const std::array<BYTE, RSA_KEY_SIZE>& publicKey)
+{
+    std::copy(publicKey.begin(), publicKey.end(), PublicKey.begin());
+}
+
+void Session::StoreAESKey(const std::array<BYTE, AES_KEY_SIZE>& aesKey)
+{
+    std::copy(aesKey.begin(), aesKey.end(), AESKey.begin());
+}
+
+std::array<BYTE, RSA_KEY_SIZE> Session::GetPublicKey() const
+{
+    return PublicKey;
 }

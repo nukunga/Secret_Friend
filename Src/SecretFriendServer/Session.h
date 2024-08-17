@@ -39,7 +39,12 @@ public:
 
 	bool SendPacket(std::vector<BYTE> data);
 
-	LONGLONG GetSessionID();
+	LONGLONG GetSessionID() const;
+
+	void StorePublicKey(const std::array<BYTE, RSA_KEY_SIZE>& publicKey);
+	void StoreAESKey(const std::array<BYTE, AES_KEY_SIZE>& publicKey);
+	std::array<BYTE, RSA_KEY_SIZE> GetPublicKey() const;
+
 
 private:
 	int recv(WSABUF wsabuf);
