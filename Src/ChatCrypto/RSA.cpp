@@ -5,18 +5,27 @@
 #include <openssl/err.h>
 #include <stdexcept>
 
-RSAEncryption::RSAEncryption(int keyLength) {
+RSAEncryption::RSAEncryption() {
+    // 이전 코드에서는 키를 생성자에서 만들었으나, 이제는 generateKey 메서드를 통해 명시적으로 생성
+}
+
+RSAEncryption::~RSAEncryption() {
+    // 메모리 해제는 사용자가 직접 키를 관리하므로 해당 클래스에서 관리하지 않음
+}
+
+EVP_PKEY* RSAEncryption::generateKey() {
     EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
     if (!ctx) {
         handleCryptoErrors();
     }
 
+    EVP_PKEY* pkey = nullptr;
     if (EVP_PKEY_keygen_init(ctx) <= 0) {
         EVP_PKEY_CTX_free(ctx);
         handleCryptoErrors();
     }
 
-    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, keyLength) <= 0) {
+    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 4096) <= 0) {
         EVP_PKEY_CTX_free(ctx);
         handleCryptoErrors();
     }
@@ -27,12 +36,7 @@ RSAEncryption::RSAEncryption(int keyLength) {
     }
 
     EVP_PKEY_CTX_free(ctx);
-}
-
-RSAEncryption::~RSAEncryption() {
-    if (pkey) {
-        EVP_PKEY_free(pkey);
-    }
+    return pkey;
 }
 
 std::string RSAEncryption::exportPublicKeyPEM() const {
@@ -65,8 +69,8 @@ std::string RSAEncryption::exportPrivateKeyPEM() const {
     return privateKeyStr;
 }
 
-std::vector<unsigned char> RSAEncryption::encryptWithPublicKey(const std::vector<unsigned char>& plaintext) const {
-    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, nullptr);
+std::vector<unsigned char> RSAEncryption::encryptWithPublicKey(const std::vector<unsigned char>& plaintext, EVP_PKEY* publicKey) const {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(publicKey, nullptr);
     if (!ctx) {
         handleCryptoErrors();
     }
@@ -92,8 +96,8 @@ std::vector<unsigned char> RSAEncryption::encryptWithPublicKey(const std::vector
     return ciphertext;
 }
 
-std::vector<unsigned char> RSAEncryption::decryptWithPrivateKey(const std::vector<unsigned char>& ciphertext) const {
-    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(pkey, nullptr);
+std::vector<unsigned char> RSAEncryption::decryptWithPrivateKey(const std::vector<unsigned char>& ciphertext, EVP_PKEY* privateKey) const {
+    EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(privateKey, nullptr);
     if (!ctx) {
         handleCryptoErrors();
     }
