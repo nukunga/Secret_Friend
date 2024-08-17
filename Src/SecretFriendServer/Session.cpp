@@ -67,16 +67,16 @@ bool Session::BindRecv()
     return true;
 }
 
-bool Session::SendPacket(PBYTE pData, int dataSize)
+template<std::size_t N>
+bool Session::SendPacket(const std::array<BYTE, N>& data)
 {
     // IOCP 워커 쓰레드에서 메모리 할당 해제시킴
     IO_DATA* ioData = new IO_DATA(IO_SEND);
-    WSABUF wsabuf = ioData->SetData(pData, dataSize);
+    WSABUF wsabuf = ioData->SetData(data, N);
     DWORD dwSentNumBytes = 0;
-    //int nRet = WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)ioData, NULL);
     int nRet = WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 
-    printf("[sentByte] %d\n", dwSentNumBytes);
+    printf("[sentByte] %d bytes sent\n", dwSentNumBytes);
 
     if (nRet == SOCKET_ERROR && (WSAGetLastError() != ERROR_IO_PENDING))
     {

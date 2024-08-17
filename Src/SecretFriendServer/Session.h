@@ -32,7 +32,8 @@ public:
 	bool IsConnected() const { return SessionSocket != INVALID_SOCKET; }
 	bool Connect(HANDLE iocpHandle);
 	bool BindRecv();
-	bool SendPacket(PBYTE pData, int dataSize);
+	template<std::size_t N>
+	bool SendPacket(const std::array<BYTE, N>& data);
 	LONGLONG GetSessionID();
 
 private:
