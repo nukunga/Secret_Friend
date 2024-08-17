@@ -19,7 +19,6 @@ public:
 		SessionState = 0;
 		PublicKey.fill(0);
 		AESKey.fill(0);
-		CurrentData.fill(0);
 	}
 
 	Session(Session const&) = delete;

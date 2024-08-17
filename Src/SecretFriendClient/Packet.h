@@ -27,7 +27,6 @@ constexpr int HDR_SIZE_DEF = 2;
 * ex) 따라서 상대방은 이를 수신시 서버<->클라이언트 키로 복호화 후 채팅방에서 교환한 키로 복호화, 총 2번 복호화를 한다.
 */
 
-
 enum PacketType
 {
 	E_PK_UNDEFINED = 0,
@@ -49,6 +48,7 @@ enum PacketType
 	SERVER_REQ_SUCCESS = 200, // 성공 응답 
 	SERVER_REQ_FAIL = 201, // 실패 응답
 	SERVER_PUBLIC_KEY = 202, // SERVER의 공개키
+	SERVER_SEND_PARITY = 203,
 
 	SERVER_ROOM_LIST = 210, // SERVER의 ROOM LIST
 	SERVER_ROOM_INFO = 211, // SERVER의 ROOM 정보
