@@ -1,6 +1,9 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
+#include <string>
 #include <winsock2.h>
+#include <thread>
+#include <atomic>
 // TODO: Openssl과 Crypto모듈 연동 테스트 후 지워도 됨
 #include "..\ChatCrypto\ChatCrypto.h"
 
@@ -9,7 +12,11 @@ using namespace std;
 #pragma comment (lib, "ws2_32.lib")
 
 #define BUF_SIZE 1024
-void    ErrorHandling(const char* message);
+void ErrorHandling(const char* message);
+void showMenu();
+void clearScreen();
+void sendMessage(SOCKET hSocket, std::atomic<bool>& isRunning);
+void receiveMessage(SOCKET hSocket, std::atomic<bool>& isRunning);
 
 int main(int argc, char* argv[])
 {
@@ -19,9 +26,7 @@ int main(int argc, char* argv[])
     WSADATA        wsaData;
     SOCKET        hSocket;
     SOCKADDR_IN    servAdr;
-    char        message[BUF_SIZE];
-    int            strLen;
-    WORD totalReadLen, readLen, dataSize;
+    std::atomic<bool> isRunning(true);
 
     if (argc != 3)
     {
@@ -45,92 +50,128 @@ int main(int argc, char* argv[])
     else
         cout << "Connected.................\n";
 
+    showMenu();
+
     while (1)
     {
-        cout << "Input message(Q to quit) : ";
-        cin.getline(message, BUF_SIZE);
+        cout << "Select menu (J/I/C/R/Q): ";
+        string menuChoice;
+        getline(cin, menuChoice);
 
-        if (!strcmp(message, "q") || !strcmp(message, "Q"))
+        if (menuChoice.empty())
+        {
+            cout << "Invalid choice! Please select again.\n";
+            continue;
+        }
+
+        char choice = toupper(menuChoice[0]);
+
+        switch (choice)
+        {
+        case 'Q':
+            isRunning = false;
             break;
 
-        if (!strcmp(message, "w"))
+        case 'J':
+        case 'I':
+        case 'C':
+        case 'R':
         {
-            strLen = strlen(message) + 1;
-
-            BYTE packet[4095];
-            memset(packet, 0x11, 4095);
-            //memcpy(packet, "BOB", 4);
-            send(hSocket, (const char*)packet, 4095, 0);
-            printf("Send complete\n");
-            //send(hSocket, "BOLSDSD", 8, 0);
-        }
-        else if (!strcmp(message, "e"))
-        {
-            strLen = strlen(message) + 1;
-
-            BYTE packet[13];
-            memset(packet, 0x00, 13);
-            packet[0] = 0x24; packet[1] = 0x08; packet[2] = 0x01; packet[3] = 0x05;
-            *((PWORD)(&packet[4])) = 7;
-
-            for (int i = 6; i < 12; i++)
-                packet[i] = 'A';
-
-            send(hSocket, (const char*)packet, 7, 0);
-            send(hSocket, (const char*)packet + 7, 6, 0);
-            //send(hSocket, "BOLSDSD", 8, 0);
-        }
-        else
-        {
-            // 아래 코드는 패킷 분리현상을 검증하기 위해 일부러 나눠서 보냄
-            strLen = strlen(message) + 1;
-
-            BYTE packet[1024];
-            //memcpy(packet, "BOB", 4);
-            send(hSocket, "BOB", 4, 0);
-
-            // IOCP와 달리 Overlapped 구조체를 거치지 않아 간편하게 코드 작성 가능
-            totalReadLen = 0;
-            while (totalReadLen < sizeof(WORD))
+            wstring roomName;
+            if (choice == 'J' || choice == 'C')
             {
-                readLen = recv(hSocket, ((char*)&dataSize) + totalReadLen, sizeof(WORD) - totalReadLen, 0);
-                if (readLen == 0)
-                {
-                    printf("Disconnected from server\n");
-                    return 1;
-                }
-
-                totalReadLen += readLen;
+                wcout << L"Enter room name: ";
+                getline(wcin, roomName);
+                // Send room name to server and handle room entry logic
             }
 
-            totalReadLen = 0;
-            readLen = 0;
-            memset(packet, 0x00, sizeof(packet));
-            printf("Received datasize: %d\n", dataSize);
-            while (totalReadLen < dataSize)
-            {
-                readLen = recv(hSocket, (char*)&packet[totalReadLen], dataSize - readLen, 0);
-                if (readLen == 0)
-                {
-                    printf("Disconnected from server\n");
-                    return 1;
-                }
+            std::thread sendThread(sendMessage, hSocket, std::ref(isRunning));
+            std::thread receiveThread(receiveMessage, hSocket, std::ref(isRunning));
 
-                totalReadLen += readLen;
-            }
+            sendThread.join();
+            receiveThread.join();
 
-            cout << "Message from server : " << packet << endl;
+            clearScreen();
+            showMenu();
+            break;
         }
 
+        default:
+            cout << "Invalid choice! Please select again.\n";
+            break;
+        }
+
+        if (choice == 'Q')
+            break;
     }
+
     closesocket(hSocket);
     WSACleanup();
     return 0;
 }
 
-void    ErrorHandling(const char* message)
+void sendMessage(SOCKET hSocket, std::atomic<bool>& isRunning)
+{
+    while (isRunning)
+    {
+        wstring chatMessage;
+        wcout << L"Enter message (!q to quit): ";
+        getline(wcin, chatMessage);
+
+        if (chatMessage == L"!q")
+        {
+            isRunning = false;
+            break;
+        }
+
+        // Convert wstring to string (assuming UTF-8)
+        string message(chatMessage.begin(), chatMessage.end());
+        send(hSocket, message.c_str(), message.size() + 1, 0); // +1 to send the null terminator
+    }
+}
+
+void receiveMessage(SOCKET hSocket, std::atomic<bool>& isRunning)
+{
+    char message[BUF_SIZE];
+    int strLen;
+
+    while (isRunning)
+    {
+        memset(message, 0, BUF_SIZE);
+        strLen = recv(hSocket, message, BUF_SIZE - 1, 0);
+        if (strLen == 0 || strLen == SOCKET_ERROR)
+        {
+            isRunning = false;
+            cout << "Disconnected from server\n";
+            break;
+        }
+
+        cout << "Message from server: " << message << endl;
+    }
+}
+
+void ErrorHandling(const char* message)
 {
     fputs(message, stderr);
     fputc('\n', stderr);
     exit(1);
+}
+
+void showMenu()
+{
+    cout << "Menu:\n";
+    cout << "J : Enter the Room\n";
+    cout << "I : Reloading the Room\n";
+    cout << "C : Create the Room\n";
+    cout << "R : Enter the Random Room\n";
+    cout << "Q : Quit\n";
+}
+
+void clearScreen()
+{
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
 }
