@@ -1,33 +1,58 @@
 #include "Room.h"
 
-bool Room::JoinRoom(Session requestorSession)
+bool Room::JoinRoom(Session* requestorSession)
 {
 	// 0이 아닌 경우 누군가 들어가 있기 때문에 연결을 거부한다.
 	mtx.lock();
-	if (GuestSessionID != 0)
+	if (GuestSession != 0)
+	{
+		mtx.unlock();
 		return false;
+	}
 	else
-		GuestSessionID = requestorSession.SessionID;
+		GuestSession = requestorSession;
 	mtx.unlock();
 
-
-
 	// TODO: 키교환 진행
-
+	return true;
 }
 
-bool Room::LeaveRoom(Session requestorSession)
+void Room::LeaveRoom(Session* requestorSession)
 {
-	if (requestorSession.GetSessionID() == )
+	Session* requestor = requestorSession;
+	if (requestor == HostSession)
+	{
+		// TODO: Destroy Room
+	}
+	else if (requestor == GuestSession)
+	{
+		mtx.lock();
+		GuestSession = 0;
+		mtx.unlock();
+
+		GuestSession->SendPacket(TEST);
+		HostSession->SendPacket();
+		// TODO: Send leave packet to both clients
+	}
 }
 
-bool Room::DestroyRoom()
+void Room::DestroyRoom()
 {
 	LeaveRoom(GuestSessionID);
 	// TODO: ...
 }
 
-bool Room::SendData(LONGLONG senderID, std::array<BYTE, SOCKET_BUFFER_SIZE> data, DWORD dataSize)
+template<std::size_t N>
+void Room::SendChat(Session* requestorSession, std::array<BYTE, N> data)
 {
-
+	// Set flag to SERVER_SEND_CHAT
+	data[0] = PacketType::SERVER_SEND_CHAT;
+	if (requestorSession == HostSession)
+	{
+		GuestSession->SendPacket(data);
+	}
+	else if (requestorSession == GuestSession)
+	{
+		HostSession->SendPacket(data);
+	}
 }

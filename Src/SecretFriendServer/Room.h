@@ -9,23 +9,25 @@
 class Room
 {
 public:
-	Room(std::wstring name, LONGLONG hostSessionID)
+	Room(std::wstring name, Session* hostSession)
 	{
 		RoomName = name;
-		HostSessionID = hostSessionID;
-		GuestSessionID = 0;
+		HostSession = hostSession;
+		GuestSession = 0;
 	}
 
-	bool JoinRoom(Session requestorSession);
-	bool LeaveRoom(LONGLONG guestSessionID);
-	bool DestroyRoom();
-	bool SendData(LONGLONG senderID, std::array<BYTE, SOCKET_BUFFER_SIZE> data, DWORD dataSize);
+	bool JoinRoom(Session* requestorSession);
+	void LeaveRoom(Session* requestorSession);
+	void DestroyRoom();
+
+	template<std::size_t N>
+	void SendChat(Session* requestorSession, std::array<BYTE, N> data);
 
 private:
 	std::mutex mtx;
 	std::wstring RoomName;
-	LONGLONG HostSessionID;
-	LONGLONG GuestSessionID;
+	Session* HostSession;
+	Session* GuestSession;
 };
 
 #endif
