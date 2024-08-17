@@ -33,11 +33,11 @@ public:
 	bool Connect(HANDLE iocpHandle);
 	bool BindRecv();
 	bool SendPacket(PBYTE pData, int dataSize);
+	LONGLONG GetSessionID();
 
 private:
 	int recv(WSABUF wsabuf);
 	int send(WSABUF wsabuf);
-	LONGLONG GetSessionID();
 
 	bool BindIOCompletionPort(HANDLE iocpHandle);
 
