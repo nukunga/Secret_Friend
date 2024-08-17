@@ -93,3 +93,9 @@ int Session::send(WSABUF wsabuf)
 
     return WSASend(SessionSocket, &wsabuf, 1, &dwSentNumBytes, 0, (LPWSAOVERLAPPED)&IOData[IO_SEND], NULL);
 }
+
+LONGLONG Session::GetSessionID()
+{
+    // session id return
+    return SessionID;
+}
