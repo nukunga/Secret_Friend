@@ -19,7 +19,6 @@ public:
 		SessionState = 0;
 		PublicKey.fill(0);
 		AESKey.fill(0);
-		CurrentData.fill(0);
 	}
 
 	Session(Session const&) = delete;
@@ -38,6 +37,7 @@ public:
 private:
 	int recv(WSABUF wsabuf);
 	int send(WSABUF wsabuf);
+	LONGLONG GetSessionID();
 
 	bool BindIOCompletionPort(HANDLE iocpHandle);
 
